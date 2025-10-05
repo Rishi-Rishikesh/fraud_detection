@@ -42,7 +42,7 @@ This project is a machine learning-based system designed to detect fraudulent ac
     venv\Scripts\activate      # For Windows
     ```
 
-3. Install dependencies:
+3. Install dependencies (frontend) :
 
     ```bash
     pip install -r requirements.txt
@@ -50,7 +50,7 @@ This project is a machine learning-based system designed to detect fraudulent ac
 
 ## Usage
 
-To start the app, run the following command:
+To start the app, run the following command (backend) :
 
 ```bash
 uvicorn main:app --reload
