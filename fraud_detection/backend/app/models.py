@@ -35,7 +35,7 @@ class Transaction(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
-    
+
     # Transaction details
     amount = Column(Float, nullable=False)
     merchant = Column(String(255), nullable=False)
@@ -47,14 +47,10 @@ class Transaction(Base):
     # Fraud detection results
     is_fraud = Column(Boolean, nullable=False, default=False)
     fraud_probability = Column(Float, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    confidence_score = Column(Float, nullable=False, default=0.0)
+    risk_level = Column(String(20), nullable=False, default='LOW')  # 'LOW', 'MEDIUM', 'HIGH'
 
-    # Relationships
-    user = relationship("User", back_populates="transactions")
-    is_fraud = Column(Boolean, nullable=False)
-    confidence_score = Column(Float, nullable=False)
-    risk_level = Column(String(20), nullable=False)  # 'LOW', 'MEDIUM', 'HIGH'
-    
+    # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     processed_at = Column(DateTime, nullable=False, default=datetime.utcnow)
 
@@ -63,4 +59,5 @@ class Transaction(Base):
     feedback_notes = Column(Text, nullable=True)
     feedback_date = Column(DateTime, nullable=True)
 
+    # Relationships
     user = relationship("User", back_populates="transactions")

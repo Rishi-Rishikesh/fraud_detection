@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import toast from 'react-hot-toast';
 import {
   Box,
   Paper,
@@ -46,6 +47,7 @@ export default function Login() {
         setError('');
         const result = await login(values.email, values.password, values.rememberMe);
         if (result.success) {
+          toast.success('Successfully logged in! Welcome back.');
           navigate('/');
         } else {
           setError(result.error);

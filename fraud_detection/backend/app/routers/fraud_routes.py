@@ -92,10 +92,14 @@ async def predict_fraud(
             "hour": tx.hour,
             "user_age": tx.user_age
         }
-        
+
         # Get fraud prediction
         is_fraud, probability = predict_label(features)
-        
+
+        # Calculate risk level and confidence score
+        risk_level = "HIGH" if probability > 0.7 else "MEDIUM" if probability > 0.3 else "LOW"
+        confidence_score = probability
+
         # Save transaction to database
         transaction = Transaction(
             user_id=current_user.id,
@@ -106,21 +110,30 @@ async def predict_fraud(
             user_age=tx.user_age,
             description=tx.description,
             is_fraud=is_fraud,
-            fraud_probability=probability
+            fraud_probability=probability,
+            confidence_score=confidence_score,
+            risk_level=risk_level
         )
         db.add(transaction)
-        
+
         # Deduct credits after successful prediction
         current_user.credits -= 10
-        
+
         # Commit both transaction and credit update
         db.commit()
-        
+
+        # Log prediction for monitoring
+        logger.info(
+            f"Fraud prediction made: prob={probability:.3f} "
+            f"fraud={is_fraud} amount={tx.amount:.2f} "
+            f"category={tx.category}"
+        )
+
         # Return detailed response
         return {
             "prediction": {
                 "is_fraud": is_fraud,
-                "fraud_probability": probability,
+                "fraud_probability": round(float(probability), 3),
                 "risk_level": "HIGH" if probability > 0.7 else "MEDIUM" if probability > 0.3 else "LOW"
             },
             "transaction": {
@@ -132,30 +145,6 @@ async def predict_fraud(
             },
             "credits_remaining": current_user.credits
         }
-        db.commit()
-        
-        response = {
-            "prediction": {
-                "is_fraud": is_fraud,
-                "fraud_probability": round(float(probability), 3),
-                "risk_level": "high" if probability > 0.7 else "medium" if probability > 0.3 else "low"
-            },
-            "transaction": {
-                "amount": tx.amount,
-                "merchant": tx.merchant,
-                "category": tx.category,
-                "hour": tx.hour
-            }
-        }
-        
-        # Log prediction for monitoring
-        logger.info(
-            f"Fraud prediction made: prob={probability:.3f} "
-            f"fraud={is_fraud} amount={tx.amount:.2f} "
-            f"category={tx.category}"
-        )
-        
-        return response
         
     except Exception as e:
         logger.error(f"Error making fraud prediction: {str(e)}")
