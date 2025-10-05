@@ -5,6 +5,7 @@ from app.database import Base, engine
 from app.routers.auth_routes import router as auth_router
 from app.routers.user_routes import router as user_router
 from app.routers.fraud_routes import router as fraud_router
+from app.routers.admin_routes import router as admin_router
 
 # create DB tables on startup
 Base.metadata.create_all(bind=engine)
@@ -33,6 +34,7 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(user_router, prefix="/user", tags=["user"])
 app.include_router(fraud_router, prefix="/fraud", tags=["fraud"])
+app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
 # health
 @app.get("/")

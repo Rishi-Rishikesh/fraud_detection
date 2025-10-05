@@ -52,10 +52,9 @@ async def get_user_stats(
     )
 
     return {
-        "total_transactions": total_transactions,
-        "fraud_detected": fraud_transactions,
-        "success_rate": round(success_rate, 2),
-        "available_credits": user.credits
+        "totalTransactions": total_transactions,
+        "fraudulentTransactions": fraud_transactions,
+        "remainingCredits": user.credits
     }
 
 @router.get("/recent-transactions")
@@ -85,14 +84,14 @@ async def get_chart_data(
     # Get transactions from the last 7 days
     seven_days_ago = datetime.utcnow() - timedelta(days=7)
     transactions = db.query(
-        func.date(Transaction.created_at).label('date'),
+        func.strftime('%Y-%m-%d', Transaction.created_at).label('date'),
         func.count(Transaction.id).label('total'),
         func.sum(case((Transaction.is_fraud == True, 1), else_=0)).label('fraud')
     ).filter(
         Transaction.user_id == user.id,
         Transaction.created_at >= seven_days_ago
     ).group_by(
-        func.date(Transaction.created_at)
+        func.strftime('%Y-%m-%d', Transaction.created_at)
     ).all()
 
     # Format data for charts
@@ -103,20 +102,26 @@ async def get_chart_data(
         "safe": record.total - (record.fraud or 0)
     } for record in transactions]
 
-    # Get category distribution
-    category_stats = db.query(
+    # Get category fraud distribution
+    category_fraud = db.query(
         Transaction.category,
         func.count(Transaction.id).label('count')
     ).filter(
-        Transaction.user_id == user.id
+        Transaction.user_id == user.id,
+        Transaction.is_fraud == True
     ).group_by(
         Transaction.category
     ).all()
 
+    # Calculate totals
+    fraud_total = sum(record.fraud or 0 for record in transactions)
+    safe_total = sum(record.safe for record in transactions)
+
     return {
-        "daily_trends": chart_data,
-        "category_distribution": [{
-            "category": stat.category,
-            "count": stat.count
-        } for stat in category_stats]
+        "dates": [record.date for record in transactions],
+        "fraudCounts": [record.fraud or 0 for record in transactions],
+        "safeCounts": [record.safe for record in transactions],
+        "fraudTotal": fraud_total,
+        "safeTotal": safe_total,
+        "categoryFraud": {stat.category: stat.count for stat in category_fraud}
     }

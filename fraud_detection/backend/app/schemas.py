@@ -43,6 +43,7 @@ class UserOut(BaseModel):
     name: str
     email: EmailStr
     credits: int
+    is_admin: bool
     last_credit_reset: datetime
     created_at: datetime
 

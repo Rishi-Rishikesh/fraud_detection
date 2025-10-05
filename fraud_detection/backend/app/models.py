@@ -14,6 +14,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=False)
     credits = Column(Integer, default=100, nullable=False)
     last_credit_reset = Column(DateTime, default=datetime.utcnow, nullable=False)
+    is_admin = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     transactions = relationship("Transaction", back_populates="user")

@@ -11,7 +11,8 @@ import {
   SearchOff as FraudIcon,
   History as HistoryIcon,
   Person as ProfileIcon,
-  Logout as LogoutIcon
+  Logout as LogoutIcon,
+  AdminPanelSettings as AdminIcon
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,6 +26,7 @@ export default function Layout() {
 
   const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
+    ...(user?.is_admin ? [{ text: 'Admin Panel', icon: <AdminIcon />, path: '/admin' }] : []),
     { text: 'Fraud Check', icon: <FraudIcon />, path: '/fraud-check' },
     { text: 'History', icon: <HistoryIcon />, path: '/history' },
     { text: 'Profile', icon: <ProfileIcon />, path: '/profile' },

@@ -34,14 +34,16 @@ def init_db():
                     "email": "test@example.com",
                     "username": "testuser",
                     "password": "test123",
-                    "credits": 100
+                    "credits": 100,
+                    "is_admin": False
                 },
                 {
                     "name": "Admin User",
-                    "email": "admin@example.com",
+                    "email": "krishikesh2001@gmail.com",
                     "username": "admin",
-                    "password": "admin123",
-                    "credits": 1000
+                    "password": "admin@123",
+                    "credits": 1000,
+                    "is_admin": True
                 }
             ]
             
@@ -52,6 +54,7 @@ def init_db():
                     username=user_data["username"],
                     password_hash=hash_password(user_data["password"]),
                     credits=user_data["credits"],
+                    is_admin=user_data["is_admin"],
                     last_credit_reset=datetime.utcnow()
                 )
                 db.add(user)

@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import FraudCheck from './pages/FraudCheck';
 import History from './pages/History';
@@ -81,6 +82,7 @@ function App() {
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
+              <Route path="admin" element={<AdminDashboard />} />
               <Route path="profile" element={<Profile />} />
               <Route path="fraud-check" element={<FraudCheck />} />
               <Route path="history" element={<History />} />
