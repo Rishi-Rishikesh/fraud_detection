@@ -14,7 +14,7 @@ import {
   Alert,
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+import axios from '../config/axios';
 
 export default function Profile() {
   const { user, updateCredits } = useAuth();
@@ -25,7 +25,7 @@ export default function Profile() {
 
   const handleTopUp = async () => {
     try {
-      const response = await axios.post('http://localhost:8000/user/add-credits', {
+      const response = await axios.post('/user/add-credits', {
         amount: parseInt(credits),
       });
 

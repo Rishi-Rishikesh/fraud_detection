@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import os
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
@@ -12,13 +13,16 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Fraud Detection Backend")
 
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5174",
-    # Add any additional origins if needed
-]
+env_origins = os.getenv("CORS_ORIGINS")
+origins = (
+    [o.strip() for o in env_origins.split(",") if o.strip()]
+    if env_origins else [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ]
+)
 
 app.add_middleware(
     CORSMiddleware,

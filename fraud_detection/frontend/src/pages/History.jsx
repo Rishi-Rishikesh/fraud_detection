@@ -19,7 +19,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 import { format } from 'date-fns';
-import axios from 'axios';
+import axios from '../config/axios';
 
 export default function History() {
   const [transactions, setTransactions] = useState([]);
@@ -48,7 +48,7 @@ export default function History() {
         end_date: filters.endDate ? format(filters.endDate, 'yyyy-MM-dd') : undefined,
       };
 
-      const response = await axios.get('http://localhost:8000/user/transactions', {
+      const response = await axios.get('/user/transactions', {
         params,
       });
 

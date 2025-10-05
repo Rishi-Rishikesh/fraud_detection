@@ -65,9 +65,9 @@ export default function Dashboard() {
     try {
       // In a real app, these would be separate API endpoints
       const [statsRes, transactionsRes, chartsRes] = await Promise.all([
-        axios.get('http://localhost:8000/user/stats'),
-        axios.get('http://localhost:8000/user/recent-transactions'),
-        axios.get('http://localhost:8000/user/chart-data'),
+        axios.get('/user/stats'),
+        axios.get('/user/recent-transactions'),
+        axios.get('/user/chart-data'),
       ]);
 
       setStats(statsRes.data);
