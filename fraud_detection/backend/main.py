@@ -40,12 +40,8 @@ app.include_router(user_router, prefix="/user", tags=["user"])
 app.include_router(fraud_router, prefix="/fraud", tags=["fraud"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
-# health
-@app.get("/")
-def root():
-    return {"status": "ok", "service": "fraud-backend"}
-
-# Some uptime monitors use HEAD; explicitly return 200 to avoid 405
-@app.head("/")
-def root_head() -> Response:
-    return Response(status_code=200)
+# health (explicitly allow both GET and HEAD)
+@app.api_route("/", methods=["GET", "HEAD"])
+def root() -> Response:
+    # For HEAD requests, return an empty 200 response
+    return Response(content='{"status":"ok","service":"fraud-backend"}', media_type="application/json", status_code=200)
