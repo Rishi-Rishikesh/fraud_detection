@@ -1,0 +1,97 @@
+🔹 What Each File Does
+main.py
+
+Imports FastAPI, routers, DB.
+
+Starts the app with uvicorn.
+
+app/config.py
+
+Contains configuration (DB URL, JWT secret, etc.).
+
+Example: SQLALCHEMY_DATABASE_URL = "sqlite:///./fraud_app.db"
+
+app/database.py
+
+Sets up SQLAlchemy engine + session for SQLite.
+
+app/models.py
+
+Defines database tables:
+
+User → id, username, email, password hash
+
+Transaction → id, user_id, details (amount, merchant, category…), fraud result
+
+app/schemas.py
+
+Pydantic models for request/response:
+
+UserCreate, UserLogin, TransactionRequest, TransactionResponse
+
+app/auth.py
+
+Handles login, password hashing, JWT creation.
+
+app/routers/
+
+auth_routes.py → /register, /login
+
+user_routes.py → /me (profile info, update password)
+
+fraud_routes.py → /predict (run ML model), /history (list transactions)
+
+app/ml/model_loader.py
+
+Loads fraud_model.joblib at startup.
+
+Provides a predict_transaction(data) function.
+
+app/utils/
+
+hashing.py → bcrypt password hashing/verification.
+
+jwt_handler.py → Create/verify JWT tokens.
+
+🔹 Requirements (requirements.txt)
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+bcrypt
+python-jose
+joblib
+scikit-learn
+xgboost
+numpy
+pandas
+
+🔹 Database (SQLite)
+
+File: fraud_app.db will be created automatically in your project folder.
+
+Tables: users, transactions.
+
+🔹 Flow of the App
+
+User registers → /auth/register
+
+User logs in → /auth/login → gets JWT token
+
+User goes to Fraud Check → /fraud/predict (JWT required)
+
+ML model (fraud_model.joblib) predicts fraud/not fraud
+
+Result stored in DB (transactions table)
+
+User can check History → /fraud/history
+
+User can check/update Profile → /user/me
+
+⚡ With this structure:
+
+You separate ML code, auth, routes, and DB → clean & scalable.
+
+SQLite is used locally, but later you can swap for PostgreSQL/MySQL without changing much.
+
+👉 Do you wan

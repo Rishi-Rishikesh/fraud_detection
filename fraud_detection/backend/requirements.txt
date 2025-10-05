@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic[email]
+pydantic-settings
+bcrypt
+python-jose
+joblib
+scikit-learn
+xgboost
+numpy
+pandas
+email-validator

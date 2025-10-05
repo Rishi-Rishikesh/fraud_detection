@@ -1,0 +1,63 @@
+from datetime import datetime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Float, ForeignKey, Text
+from sqlalchemy.orm import relationship
+
+from app.database import Base
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(60), nullable=False)
+    email = Column(String(120), unique=True, index=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    credits = Column(Integer, default=100, nullable=False)
+    last_credit_reset = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    transactions = relationship("Transaction", back_populates="user")
+    credit_purchases = relationship("CreditPurchase", back_populates="user")
+
+class CreditPurchase(Base):
+    __tablename__ = "credit_purchases"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    amount = Column(Float, nullable=False)  # Purchase amount in dollars
+    credits_added = Column(Integer, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", back_populates="credit_purchases")
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True, nullable=False)
+    
+    # Transaction details
+    amount = Column(Float, nullable=False)
+    merchant = Column(String(255), nullable=False)
+    category = Column(String(100), nullable=False)
+    location = Column(String(255), nullable=False)
+    transaction_type = Column(String(50), nullable=False)
+    card_type = Column(String(50), nullable=False)
+
+    # Store the raw feature payload as JSON string (Text is SQLite-friendly)
+    payload_json = Column(Text, nullable=False)
+
+    # Model outputs
+    probability = Column(Float, nullable=False)
+    is_fraud = Column(Boolean, nullable=False)
+    confidence_score = Column(Float, nullable=False)
+    risk_level = Column(String(20), nullable=False)  # 'LOW', 'MEDIUM', 'HIGH'
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    processed_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+
+    # Feedback
+    feedback_correct = Column(Boolean, nullable=True)
+    feedback_notes = Column(Text, nullable=True)
+    feedback_date = Column(DateTime, nullable=True)
+
+    user = relationship("User", back_populates="transactions")
