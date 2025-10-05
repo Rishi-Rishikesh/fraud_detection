@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 import os
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -44,3 +44,8 @@ app.include_router(admin_router, prefix="/admin", tags=["admin"])
 @app.get("/")
 def root():
     return {"status": "ok", "service": "fraud-backend"}
+
+# Some uptime monitors use HEAD; explicitly return 200 to avoid 405
+@app.head("/")
+def root_head() -> Response:
+    return Response(status_code=200)
