@@ -15,9 +15,14 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter(User.email == payload.email).first():
         raise HTTPException(status_code=400, detail="Email already registered")
 
+    # Check for duplicate username
+    if db.query(User).filter(User.username == payload.username).first():
+        raise HTTPException(status_code=400, detail="Username already taken")
+
     user = User(
         name=payload.name,
         email=payload.email,
+        username=payload.username,
         password_hash=hash_password(payload.password),
         credits=100  # Give new users 100 initial credits
     )

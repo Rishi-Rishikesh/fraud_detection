@@ -13,8 +13,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if not payload or "sub" not in payload:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
 
-    username = payload["sub"]
-    user = db.query(User).filter(User.username == username).first()
+    user_id = payload["sub"]
+    user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
 

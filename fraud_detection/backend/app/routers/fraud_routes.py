@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.ml.model_loader import predict_label
 from app.database import get_db
-from app.models import User, CreditPurchase
+from app.models import User, CreditPurchase, Transaction
 from app.auth import get_current_user
 import logging
 
@@ -13,7 +13,7 @@ router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
-class Transaction(BaseModel):
+class TransactionRequest(BaseModel):
     amount: float = Field(..., gt=0, description="Transaction amount (must be positive)")
     merchant: str = Field(..., min_length=1, max_length=100)
     category: str = Field(..., min_length=1, max_length=50)
@@ -72,7 +72,7 @@ async def get_credit_balance(
 
 @router.post("/predict")
 async def predict_fraud(
-    tx: Transaction,
+    tx: TransactionRequest,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -96,8 +96,42 @@ async def predict_fraud(
         # Get fraud prediction
         is_fraud, probability = predict_label(features)
         
+        # Save transaction to database
+        transaction = Transaction(
+            user_id=current_user.id,
+            amount=tx.amount,
+            merchant=tx.merchant,
+            category=tx.category,
+            hour=tx.hour,
+            user_age=tx.user_age,
+            description=tx.description,
+            is_fraud=is_fraud,
+            fraud_probability=probability
+        )
+        db.add(transaction)
+        
         # Deduct credits after successful prediction
         current_user.credits -= 10
+        
+        # Commit both transaction and credit update
+        db.commit()
+        
+        # Return detailed response
+        return {
+            "prediction": {
+                "is_fraud": is_fraud,
+                "fraud_probability": probability,
+                "risk_level": "HIGH" if probability > 0.7 else "MEDIUM" if probability > 0.3 else "LOW"
+            },
+            "transaction": {
+                "id": transaction.id,
+                "amount": transaction.amount,
+                "merchant": transaction.merchant,
+                "category": transaction.category,
+                "created_at": transaction.created_at.isoformat()
+            },
+            "credits_remaining": current_user.credits
+        }
         db.commit()
         
         response = {

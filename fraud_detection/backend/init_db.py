@@ -1,8 +1,8 @@
 
+from sqlalchemy.orm import Session
 from app.database import Base, engine, get_db
 from app.models import User, Transaction
 from app.utils.hashing import hash_password
-from sqlalchemy.orm import Session
 
 def init_db():
     print("Creating database tables...")
@@ -11,6 +11,9 @@ def init_db():
     # Create all tables
     Base.metadata.create_all(bind=engine)
     print("Database tables created successfully!")
+
+    # Create a new DB session
+    db = Session(engine)
 
     # Create a default user for testing
     db: Session = next(get_db())
@@ -21,6 +24,7 @@ def init_db():
             default_user = User(
                 name="Admin User",
                 email="admin@example.com",
+                username="admin",
                 password_hash=hash_password("password123"),
                 credits=100
             )

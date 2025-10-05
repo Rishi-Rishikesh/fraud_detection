@@ -7,7 +7,8 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 # Default model path if not specified in config
-MODEL_PATH = "fraud_model.joblib"
+import os
+MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "fraud_model.joblib")
 
 # Load the model
 try:
@@ -51,14 +52,30 @@ except Exception as e:
     # Fit the model
     MODEL.fit(X_processed, y)
 
+_MERCHANT_CATEGORIES = {}
+_CATEGORY_CATEGORIES = {}
+
 def preprocess_features(features: Dict[str, Any]) -> pd.DataFrame:
     """Convert raw features into model-ready format"""
+    global _MERCHANT_CATEGORIES, _CATEGORY_CATEGORIES
+    
     df = pd.DataFrame([features])
     
-    # Convert categorical features
-    for col in ["merchant", "category"]:
-        df[col] = df[col].astype("category")
-        df[col] = df[col].cat.codes
+    # Convert categorical features with consistent encoding
+    if not _MERCHANT_CATEGORIES:
+        _MERCHANT_CATEGORIES = {
+            merchant: idx for idx, merchant in 
+            enumerate(sorted(set(["amazon", "walmart", "target"])))  # Add known merchants
+        }
+    if not _CATEGORY_CATEGORIES:
+        _CATEGORY_CATEGORIES = {
+            category: idx for idx, category in 
+            enumerate(sorted(set(["shopping", "entertainment", "travel", "food", "transfer", "withdrawal", "payment"])))
+        }
+    
+    # Use consistent encoding
+    df["merchant"] = df["merchant"].map(lambda x: _MERCHANT_CATEGORIES.get(x.lower(), -1))
+    df["category"] = df["category"].map(lambda x: _CATEGORY_CATEGORIES.get(x.lower(), -1))
     
     return df
 

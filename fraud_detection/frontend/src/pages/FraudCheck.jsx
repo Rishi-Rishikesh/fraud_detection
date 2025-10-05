@@ -12,7 +12,7 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
-import axios from 'axios';
+import axios from '../config/axios';
 import { useAuth } from '../context/AuthContext';
 
 const validationSchema = yup.object({
@@ -74,7 +74,7 @@ export default function FraudCheck() {
       setResult(null);
 
       try {
-        const response = await axios.post('http://localhost:8000/fraud/predict', values);
+        const response = await axios.post('/fraud/predict', values);
         setResult(response.data);
         
         // Update credits in auth context if API returns new balance
