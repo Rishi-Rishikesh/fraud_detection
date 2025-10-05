@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Response
+from starlette.types import Scope, Receive, Send
 import os
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -12,6 +13,40 @@ from app.routers.admin_routes import router as admin_router
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Fraud Detection Backend")
+
+
+class AllowHeadMiddleware:
+    """Convert HEAD requests to GET internally and return empty body.
+
+    Some external monitors only use HEAD. This ensures 200 responses
+    where a GET route exists without duplicating route methods.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope.get("type") == "http" and scope.get("method") == "HEAD":
+            # Clone scope and rewrite method to GET
+            new_scope = dict(scope)
+            new_scope["method"] = "GET"
+
+            async def send_wrapper(message):
+                # Drop response body for HEAD
+                if message.get("type") == "http.response.body":
+                    empty = dict(message)
+                    empty["body"] = b""
+                    await send(empty)
+                else:
+                    await send(message)
+
+            await self.app(new_scope, receive, send_wrapper)
+            return
+        await self.app(scope, receive, send)
+
+
+# Wrap the app so HEAD works everywhere a GET exists
+app = AllowHeadMiddleware(app)
 
 env_origins = os.getenv("CORS_ORIGINS")
 origins = (
@@ -40,8 +75,7 @@ app.include_router(user_router, prefix="/user", tags=["user"])
 app.include_router(fraud_router, prefix="/fraud", tags=["fraud"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
-# health (explicitly allow both GET and HEAD)
-@app.api_route("/", methods=["GET", "HEAD"])
+# health
+@app.get("/")
 def root() -> Response:
-    # For HEAD requests, return an empty 200 response
     return Response(content='{"status":"ok","service":"fraud-backend"}', media_type="application/json", status_code=200)
