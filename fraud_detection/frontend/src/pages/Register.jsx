@@ -100,6 +100,11 @@ const validationSchema = yup.object({
     .string()
     .required('Name is required')
     .min(2, 'Name should be at least 2 characters'),
+  username: yup
+    .string()
+    .required('Username is required')
+    .min(3, 'Username should be at least 3 characters')
+    .matches(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores and hyphens'),
   email: yup
     .string()
     .email('Enter a valid email')
@@ -180,6 +185,7 @@ export default function Register() {
   const formik = useFormik({
     initialValues: {
       name: '',
+      username: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -190,6 +196,7 @@ export default function Register() {
         setError('');
         const result = await register({
           name: values.name,
+          username: values.username,
           email: values.email,
           password: values.password,
         });
@@ -400,6 +407,34 @@ export default function Register() {
                       onChange={formik.handleChange}
                       error={formik.touched.name && Boolean(formik.errors.name)}
                       helperText={formik.touched.name && formik.errors.name}
+                      variant="outlined"
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          bgcolor: 'rgba(255,255,255,0.05)',
+                          '& fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                          '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.3)' },
+                          '&.Mui-focused fieldset': { borderColor: '#00ff88' },
+                        },
+                        '& .MuiInputLabel-root': { 
+                          color: 'rgba(255,255,255,0.7)',
+                          '&.Mui-focused': { color: '#00ff88' },
+                        },
+                        '& .MuiFormHelperText-root': { color: '#ef4444' },
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      id="username"
+                      name="username"
+                      label="Username"
+                      autoComplete="username"
+                      value={formik.values.username}
+                      onChange={formik.handleChange}
+                      error={formik.touched.username && Boolean(formik.errors.username)}
+                      helperText={formik.touched.username && formik.errors.username}
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {

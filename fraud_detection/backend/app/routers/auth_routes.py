@@ -44,7 +44,14 @@ def register(payload: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(payload: UserLogin, db: Session = Depends(get_db)):
+    # Try to find user by email
     user = db.query(User).filter(User.email == payload.email).first()
+    
+    # If not found by email, try username
+    if not user:
+        user = db.query(User).filter(User.username == payload.email).first()
+    
+    # Check user exists and password is correct
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
 

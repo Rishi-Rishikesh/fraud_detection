@@ -3,14 +3,33 @@ from typing import Any, Dict, Optional, List
 from pydantic import BaseModel, EmailStr
 
 # ---------- Auth ----------
+from pydantic import Field, validator
+import re
+
 class UserCreate(BaseModel):
-    name: str
+    name: str = Field(..., min_length=2)
     email: EmailStr
-    username: str
-    password: str
+    username: str = Field(..., min_length=3)
+    password: str = Field(..., min_length=8)
+
+    @validator('password')
+    def password_strength(cls, v):
+        if not re.search(r'[A-Z]', v):
+            raise ValueError('Password must contain at least one uppercase letter')
+        if not re.search(r'[a-z]', v):
+            raise ValueError('Password must contain at least one lowercase letter')
+        if not re.search(r'\d', v):
+            raise ValueError('Password must contain at least one number')
+        return v
+
+    @validator('username')
+    def username_alphanumeric(cls, v):
+        if not v.replace('_', '').replace('-', '').isalnum():
+            raise ValueError('Username must be alphanumeric')
+        return v
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str  # Changed from EmailStr to str to allow username login
     password: str
 
 class Token(BaseModel):
